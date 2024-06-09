@@ -3,28 +3,40 @@ import { ProductsService } from '../services/products.service';
 import { Product, Products } from '../../types';
 import { ProductComponent } from '../components/product/product.component';
 import { CommonModule } from '@angular/common';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [ProductComponent, CommonModule],
+  imports: [ProductComponent, CommonModule, PaginatorModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
 export class HomeComponent {
+  constructor(private productService: ProductsService) {}
+
   products: Product[] = [];
 
-  constructor(private productService: ProductsService) {}
+  totalRecords: number = 0;
+  rows: number = 5;
 
   onProductOutput(product: Product) {
     console.log(product, 'Output');
   }
 
-  ngOnInit() {
+  onPageChange(event: any) {
+    this.fetProducts(event.page, event.rows);
+  }
+  fetProducts(page: number, perPage: number) {
     this.productService
-      .getProducts('http://localhost:3000/clothes', { page: 0, perPage: 5 })
+      .getProducts('http://localhost:3000/clothes', { page, perPage })
       .subscribe((products: Products) => {
         this.products = products.items;
+        this.totalRecords = products.total;
       });
+  }
+
+  ngOnInit() {
+    this.fetProducts(0, this.rows);
   }
 }
